@@ -121,7 +121,8 @@ def compute_rectangle(anchor, height_pt, mouse_pt):
 def draw_overlay(img):
     overlay = img.copy()
 
-    class_name, class_id = get_class_from_filename(state["filename"])
+    fname = state["filename"]
+    class_name, class_id = get_class_from_filename(fname)
 
     phase_text = {
         0: "Click upper-left corner",
@@ -130,6 +131,7 @@ def draw_overlay(img):
     }
 
     lines = [
+        f"Filename: {fname}",
         f"Class: {class_name} ({class_id})",
         f"State: {phase_text.get(state['phase'], '')}",
         "",
