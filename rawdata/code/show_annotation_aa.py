@@ -1,7 +1,7 @@
-# show_annotation.py
-# usage: python show_annotation.py *.jpg
+# show_annotation_aa.py
+# usage: python show_annotation_aa.py *.jpg
 # Loads images and corresponding YOLO OBB .txt metadata
-# Draws green oriented bounding boxes with 12:00 marker
+# Draws green oriented bounding boxes ignoring rotation
 # Press any key for next image
 # Press q to quit
 
@@ -13,9 +13,9 @@ import sys
 
 
 # ---------------------------------
-# Convert YOLO OBB → 4 corner points
+# Convert YOLO Axis Aligned → 4 corner points
 # ---------------------------------
-def yolo_obb_to_corners(img, x_center, y_center, width, height, angle_deg):
+def yolo_obb_to_corners_aa(img, x_center, y_center, width, height):
     h_img, w_img = img.shape[:2]
 
     # Denormalize
@@ -24,35 +24,23 @@ def yolo_obb_to_corners(img, x_center, y_center, width, height, angle_deg):
     w = width * w_img
     h = height * h_img
 
-    theta = np.radians(angle_deg)
-
-    # Direction vectors
-
-    # Height direction (12:00 direction)
-    dx_h = -np.sin(theta)
-    dy_h =  np.cos(theta)
-
-    # Width direction (90° rotated from height)
-    dx_w =  np.cos(theta)
-    dy_w =  np.sin(theta)
-
     # Half sizes
     hw = w / 2.0
     hh = h / 2.0
 
     # Corners (UL, LL, LR, UR)
-    A = np.array([cx - hw*dx_w - hh*dx_h, cy - hw*dy_w - hh*dy_h])
-    B = np.array([cx - hw*dx_w + hh*dx_h, cy - hw*dy_w + hh*dy_h])
-    C = np.array([cx + hw*dx_w + hh*dx_h, cy + hw*dy_w + hh*dy_h])
-    D = np.array([cx + hw*dx_w - hh*dx_h, cy + hw*dy_w - hh*dy_h])
+    A = np.array([cx - hw, cy - hh])
+    B = np.array([cx - hw, cy + hh])
+    C = np.array([cx + hw, cy + hh])
+    D = np.array([cx + hw, cy - hh])
 
     return np.array([A, B, C, D], dtype=np.int32)
 
 
 # ---------------------------------
-# Draw rectangle + 12:00 marker
+# Draw axis aligned rectangle
 # ---------------------------------
-def draw_obb(img, corners):
+def draw_aa(img, corners):
     overlay = img.copy()
 
     cv2.polylines(
@@ -61,19 +49,6 @@ def draw_obb(img, corners):
         isClosed=True,
         color=(0, 255, 0),
         thickness=3,
-    )
-
-    # 12:00 orientation marker
-    A, B, C, D = corners
-    center = corners.mean(axis=0).astype(int)
-    top_center = ((A + D) / 2).astype(int)
-
-    cv2.line(
-        overlay,
-        tuple(top_center),
-        tuple(center),
-        (0, 255, 0),
-        3,
     )
 
     return overlay
@@ -90,7 +65,7 @@ def visualize(filelist):
             continue
 
         stem = os.path.splitext(fname)[0]
-        txtfile = stem + ".txt"
+        txtfile = stem + "_aa.txt"
 
         display = img.copy()
 
@@ -98,22 +73,21 @@ def visualize(filelist):
             with open(txtfile, "r") as f:
                 for line in f:
                     parts = line.strip().split()
-                    if len(parts) != 6:
+                    if len(parts) != 5:
                         continue
 
-                    _, xc, yc, w, h, angle = parts
-                    corners = yolo_obb_to_corners(
+                    _, xc, yc, w, h = parts
+                    corners = yolo_obb_to_corners_aa(
                         img,
                         float(xc),
                         float(yc),
                         float(w),
                         float(h),
-                        float(angle),
                     )
 
-                    display = draw_obb(display, corners)
+                    display = draw_aa(display, corners)
 
-        cv2.imshow("OBB Viewer", display)
+        cv2.imshow("AA Bounding Box Viewer", display)
 
         key = cv2.waitKey(0) & 0xFF
         if key == ord('q'):
