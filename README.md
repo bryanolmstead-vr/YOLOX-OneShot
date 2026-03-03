@@ -363,6 +363,24 @@ python tools/demo.py image \
 
 **3/1/2026** - 2hrs
 
-Converte Word document into this README file that will get printed as a PDF file.
- 
+Converted Word document into this README file that will get printed as a PDF file.
 
+**3/2/2026** - 30min, 9:30
+
+Splitting up data set between train and validation sets. converting annotation to COCO format for training.
+
+There are 145 files: split 80% training, 20% validation.
+I chose 29 files for validation.
+
+Label files were converted to COCO format using `yolo2coco.py`
+Created directory structure
+```
+datasets/COCO
+ ├── train2017/ candy.200.01_640x640.png
+ ├── val2017/   candy.300.02_640x640.png
+ └── annotations/
+      ├── instances_train2017.json
+      ├── instances_val2017.json
+      ├── train2017/ candy.200.01_640x640.txt
+      └── val2017/   candy.300.02_640x640.txt
+```
