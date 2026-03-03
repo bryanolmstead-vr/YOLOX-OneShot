@@ -242,6 +242,19 @@ print(A.__version__)
 ```
 
 Apparently the YOLOX training script already does augmentation.
+
+
+**3/1/2026** - 2hrs
+
+Converted Word document into this README file that will get printed as a PDF file.
+
+**3/2/2026** - 30min, 9:30
+
+Splitting up data set between train and validation sets. converting annotation to COCO format for training.
+
+There are 145 files: split 80% training, 20% validation.
+I chose 29 files for validation.
+
 The label files need to be turned into a COCO style file:
 
 ```
@@ -253,18 +266,24 @@ box_height = height * image_height
 ```
 
 Created `yolo2coco.py` to perform the conversion
-After conversion the data set should look like:
 
+Label files were converted to COCO format using `yolo2coco.py`
+
+Created directory structure
 ```
-datasets/mydataset/
- ├── train2017/
- ├── val2017/
+datasets/COCO
+ ├── train2017/ candy.200.01_640x640.png
+ ├── val2017/   candy.300.02_640x640.png
  └── annotations/
       ├── instances_train2017.json
-      └── instances_val2017.json
+      ├── instances_val2017.json
+      ├── train2017/ candy.200.01_640x640.txt
+      └── val2017/   candy.300.02_640x640.txt
 ```
 
-Next steps. In YOLOX:
+<span style="color:red;">
+Next steps: 
+</span>
 
 ```
 exps/example/yolox_s.py
@@ -359,28 +378,4 @@ python tools/demo.py image \
     --nms 0.45 \
     --tsize 640 \
     --save_result
-```
-
-**3/1/2026** - 2hrs
-
-Converted Word document into this README file that will get printed as a PDF file.
-
-**3/2/2026** - 30min, 9:30
-
-Splitting up data set between train and validation sets. converting annotation to COCO format for training.
-
-There are 145 files: split 80% training, 20% validation.
-I chose 29 files for validation.
-
-Label files were converted to COCO format using `yolo2coco.py`
-Created directory structure
-```
-datasets/COCO
- ├── train2017/ candy.200.01_640x640.png
- ├── val2017/   candy.300.02_640x640.png
- └── annotations/
-      ├── instances_train2017.json
-      ├── instances_val2017.json
-      ├── train2017/ candy.200.01_640x640.txt
-      └── val2017/   candy.300.02_640x640.txt
 ```
