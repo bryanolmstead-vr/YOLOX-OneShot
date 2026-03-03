@@ -248,7 +248,7 @@ Apparently the YOLOX training script already does augmentation.
 
 Converted Word document into this README file that will get printed as a PDF file.
 
-**3/2/2026** - 30min, 9:30
+**3/2/2026** - 1.5hrs
 
 Splitting up data set between train and validation sets. converting annotation to COCO format for training.
 
@@ -281,76 +281,106 @@ datasets/COCO
       └── val2017/   candy.300.02_640x640.txt
 ```
 
-<span style="color:red;">
-Next steps: 
-</span>
+**3/3/2026** - 8:45am
+
+My directory structure:
 
 ```
-exps/example/yolox_s.py
-rename to
-yolox_mydata.py
-edit
-self.num_classes = 3
-self.data_dir = "datasets/mydataset"
-self.train_ann = "instances_train2017.json"
-self.val_ann = "instances_val2017.json"
+OSU
+ ├── YOLOX          fork of YOLOX
+ ├── YOLOX-OneShot  my repo for AI535
+ ```
+
+To start with, I will just modify the YOLOX files and point to the dataset in YOLOX-OneShot
+
+```
+YOLOX/exps/example/custom/yolox_s.py
+copy to
+yolox_s_3classes.py
+edit:
+        self.data_dir = "../../YOLOX-OneShot/datasets/COCO3"
+        self.train_ann = "annotations/instances_train2017.json"
+        self.val_ann = "annotations/instances_val2017.json"
+        self.num_classes = 3
 ```
  
 To train:
+I have 116 images in training dataset.
 
+Proposed hyperparameters (put in yolox_s_3classes.py):
 ```
-python tools/train.py \
-    -f exps/example/yolox_mydata.py \
-    -d 1 \
-    -b 8 \
-    --fp16 \
-    -o \
-    -c yolox_s.pth
-```
-
-Recommendations based on 145 images in dataset:
-
-```
-Batch = 4 to 8
-Epochs = 100 to 150
-Augmentation = built-in mosaic + mixup + randomaffine + hsv + flip
-	Actually I don’t want flip since it destroys the 360
-Use pretrained weights yolox_s.pth from COCO
+Workers = 4
+Epochs  = 100
+Eval Interval = 1
+Weight Decay = 5e-4
+Warmup Epochs = 3
+Input Size = (640x640)
+Random Size = 18x32 to 22x32: 576x576 to 704x704      
 ```
 
-```
-python tools/train.py \
-    -f exps/example/yolox_mydata.py \
-    -d 1 \
-    -b 4 \
-    --fp16 \
-    -o \
-    -c yolox_s.pth \
-    -e 150
-```
-
-Split images into 80% train 20% eval
-
-Turn off flip:
+Training command:
 
 ```
-yolox/data/data_augment.py
-self.transform = TrainTransform(
-    max_labels=50,
-    flip_prob=0.0,  # DISABLE flipping
-    hsv_prob=1.0
-)
+be in YOLOX directory:
+d=1  number of gpus
+b=8  batch size
+fp16 precision
+-o   use LARS optimizer warmup override
+-c   pretrained weights
+
+python tools/train.py -f exps/example/custom/yolox_s_3classes.py -d 1 -b 8 --fp16 -o -c yolox_s.pth
 ```
 
-Edit yolox_mydata.py:
+My first training attempt on my laptop failed with an opencv error. It can be replicated by a single import line:
 
 ```
-self.data_num_workers = 4
-self.input_size = (640, 640)
-self.random_size = (14, 26)
+python
+Python 3.10.19 | packaged by Anaconda, Inc. | (main, Oct 21 2025, 16:41:31) [MSC v.1929 64 bit (AMD64)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+Ctrl click to launch VS Code Native REPL
+>>> from yolox.utils import configure_models
+
+
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "C:\Users\Bryan\Desktop\home\OSU\yolox\yolox\utils\__init__.py", line 8, in <module>
+    from .demo_utils import *
+  File "C:\Users\Bryan\Desktop\home\OSU\yolox\yolox\utils\demo_utils.py", line 7, in <module>
+    import cv2
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\cv2\__init__.py", line 181, in <module>
+    bootstrap()
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\cv2\__init__.py", line 153, in bootstrap
+    native_module = importlib.import_module("cv2")
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\importlib\__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+ImportError: DLL load failed while importing cv2: The operating system cannot run %1.
 ```
 
+ChatGPT offers this suggestion:
+```
+Step 1 — Install VC++ Redistributable x64: 
+  Download & install: VC++ Redistributable 2015–2022 x64. 
+  Reboot your computer after installation. 
+  This fixes 90% of OpenCV “DLL load failed” issues on Windows.
+Step 2:
+  conda activate yolox
+  conda remove opencv
+  conda install -c conda-forge opencv
+Step 3:
+  cd C:\Users\Bryan\Desktop\home\OSU\yolox
+  python -c "from yolox.utils import demo_utils; import cv2; print(cv2.__version__)"
+  Must succeed without the DLL error.
+```
+I'm trying just step 2 first. then i did:
+```
+conda install pytorch torchvision torchaudio cpuonly -c pytorch
+cd YOLOX
+pip3 install -v -e .
+```
+
+<span style="color:red;">
 to do inference:
+</span>
 
 ```
 YOLOX_outputs/
