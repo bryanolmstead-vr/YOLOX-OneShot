@@ -722,20 +722,28 @@ python -m yolox.tools.eval \
 -d 1 \
 --conf 0.001
 ```
+Validation results: (I think it does this during training)
+```
+| class   | AP     | class   | AP     | class   | AP     |
+|:--------|:-------|:--------|:-------|:--------|:-------|
+| candy   | 92.995 | cards   | 95.265 | cheeto  | 91.728 |
+per class AR:
+| class   | AR     | class   | AR     | class   | AR     |
+|:--------|:-------|:--------|:-------|:--------|:-------|
+| candy   | 94.000 | cards   | 95.714 | cheeto  | 93.636 |
+```
 
 To do inference (something like this):
 ```
 python tools/demo.py image \
--n yolox-s \
--c YOLOX_outputs/yolox_s_3classes/best_ckpt.pth \
---path /content/test_images \
---conf 0.25 \
---nms 0.45 \
---tsize 640 \
---save_result \
---device cuda
-```
-
+    -n yolox-s \
+    -f exps/example/custom/yolox_s_3classes.py \
+    -c YOLOX_outputs/yolox_s_3classes/best_ckpt.pth \
+    --path ../YOLOX-OneShot/datasets/COCO3/val2017 \
+    --conf 0.001 \
+    --tsize 640 \
+    --save_result \
+    --device cuda
 ```
 YOLOX_outputs/
  └── mydata/
