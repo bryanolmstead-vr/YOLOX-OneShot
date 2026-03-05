@@ -10,10 +10,10 @@ import json
 import cv2
 
 # ===== EDIT THESE =====
-IMAGE_DIR = "datasets/mydataset/train2017"
-LABEL_DIR = "datasets/mydataset/train2017"  # or wherever your txt files are
-OUTPUT_JSON = "datasets/mydataset/annotations/instances_train2017.json"
-CATEGORIES = ["class0", "class1", "class2"]  # replace with your class names
+IMAGE_DIR = "../../dataset/COCO/val2017"
+LABEL_DIR = "../../dataset/COCO/annotations/val2017" 
+OUTPUT_JSON = "../../dataset/COCO/annotations/instances_val2017.json"
+CATEGORIES = ["candy", "cards", "cheeto"] 
 # ======================
 
 images = []
