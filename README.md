@@ -281,7 +281,7 @@ datasets/COCO
       └── val2017/   candy.300.02_640x640.txt
 ```
 
-**3/3/2026** - 8:45am
+**3/3/2026** - 1hr
 
 My directory structure:
 
@@ -377,6 +377,309 @@ conda install pytorch torchvision torchaudio cpuonly -c pytorch
 cd YOLOX
 pip3 install -v -e .
 ```
+
+the pip3 install uninstalled everything i did previously
+
+**3/4/2026** - 3:30pm
+
+```
+PS C:\Users\Bryan\Desktop\home\OSU\yolox\tools> python
+Python 3.10.13 | packaged by Anaconda, Inc. | (main, Sep 11 2023, 13:15:57) [MSC v.1916 64 bit (AMD64)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+Ctrl click to launch VS Code Native REPL
+>>> from yolox.utils import configure_models
+
+A module that was compiled using NumPy 1.x cannot be run in
+NumPy 2.2.6 as it may crash. To support both 1.x and 2.x
+versions of NumPy, modules must be compiled with NumPy 2.0.
+Some module may need to rebuild instead e.g. with 'pybind11>=2.12'.
+
+If you are a user of the module, the easiest solution will be to
+downgrade to 'numpy<2' or try to upgrade the affected module.
+We expect that some modules will need time to support NumPy 2.
+
+Traceback (most recent call last):  File "<stdin>", line 1, in <module>
+  File "C:\Users\Bryan\Desktop\home\OSU\YOLOX\yolox\utils\__init__.py", line 5, in <module>
+    from .boxes import *
+  File "C:\Users\Bryan\Desktop\home\OSU\YOLOX\yolox\utils\boxes.py", line 7, in <module>
+    import torchvision
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torchvision\__init__.py", line 6, in <module>
+    from torchvision import _meta_registrations, datasets, io, models, ops, transforms, utils
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torchvision\models\__init__.py", line 2, in <module>
+    from .convnext import *
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torchvision\models\convnext.py", line 8, in <module>
+    from ..ops.misc import Conv2dNormActivation, Permute
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torchvision\ops\__init__.py", line 23, in <module>
+    from .poolers import MultiScaleRoIAlign
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torchvision\ops\poolers.py", line 10, in <module>
+    from .roi_align import roi_align
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torchvision\ops\roi_align.py", line 4, in <module>
+    import torch._dynamo
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torch\_dynamo\__init__.py", line 64, in <module>
+    torch.manual_seed = disable(torch.manual_seed)
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torch\_dynamo\decorators.py", line 50, in disable
+    return DisableContext()(fn)
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torch\_dynamo\eval_frame.py", line 410, in __call__
+    (filename is None or trace_rules.check(fn))
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torch\_dynamo\trace_rules.py", line 3378, in check
+    return check_verbose(obj, is_inlined_call).skipped
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torch\_dynamo\trace_rules.py", line 3361, in check_verbose
+    rule = torch._dynamo.trace_rules.lookup_inner(
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torch\_dynamo\trace_rules.py", line 3442, in lookup_inner
+    rule = get_torch_obj_rule_map().get(obj, None)
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torch\_dynamo\trace_rules.py", line 2782, in get_torch_obj_rule_map        
+    obj = load_object(k)
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torch\_dynamo\trace_rules.py", line 2811, in load_object
+    val = _load_obj_from_str(x[0])
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torch\_dynamo\trace_rules.py", line 2795, in _load_obj_from_str
+    return getattr(importlib.import_module(module), obj_name)
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\importlib\__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torch\nested\_internal\nested_tensor.py", line 417, in <module>
+    values=torch.randn(3, 3, device="meta"),
+C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torch\nested\_internal\nested_tensor.py:417: UserWarning: Failed to initialize NumPy: _ARRAY_API not found (Triggered internally at ..\torch\csrc\utils\tensor_numpy.cpp:84.)
+  values=torch.randn(3, 3, device="meta"),
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "C:\Users\Bryan\Desktop\home\OSU\YOLOX\yolox\utils\__init__.py", line 8, in <module>
+    from .demo_utils import *
+  File "C:\Users\Bryan\Desktop\home\OSU\YOLOX\yolox\utils\demo_utils.py", line 7, in <module>
+    import cv2
+ImportError: DLL load failed while importing cv2: The specified module could not be found.
+```
+let's debug why this is happening:
+
+```
+from yolox.utils import configure_models
+__init__.py
+from .boxes import *
+import torchvision
+from torchvision import _meta_registrations, datasets, io, models, ops, transforms, utils
+from .convnext import *
+from ..ops.misc import Conv2dNormActivation, Permute
+from .poolers import MultiScaleRoIAlign
+from .roi_align import roi_align
+import torch._dynamo
+torch.manual_seed = disable
+decorators.py", line 50, in disable: return DisableContext()(fn)
+eval_frame.py", line 410, in __call__ (filename is None or trace_rules.check(fn))
+trace_rules.py", line 3378, in check: return check_verbose(obj, is_inlined_call).skipped
+trace_rules.py: check_verbose: rule = torch._dynamo.trace_rules.lookup_inner
+trace_rules.py", line 3442, in lookup_inner: rule = get_torch_obj_rule_map().get(obj, None)
+trace_rules.py", line 2782, in get_torch_obj_rule_map: obj = load_object(k)
+trace_rules.py", line 2811, in load_object: val = _load_obj_from_str(x[0])
+trace_rules.py", line 2795, in _load_obj_from_str: return getattr(importlib.import_module(module), obj_name)
+in import_module: return _bootstrap._gcd_import(name[level:], package, level)
+nested_tensor.py", line 417, in <module>: values=torch.randn(3, 3, device="meta"),
+nested_tensor.py:417: UserWarning: Failed to initialize NumPy: _ARRAY_API not found 
+tensor_numpy.cpp:84.): values=torch.randn(3, 3, device="meta"),
+from .demo_utils import *
+import cv2
+ImportError: DLL load failed while importing cv2: The specified module could not be found.
+```
+1. wants numpy1 vs numpy2
+2. seems to not have cv2
+
+redoing YOLOX installation:
+```
+cd YOLOX
+pip3 install -v -e .
+```
+
+gives these errors/warnings:
+```
+1. unable to import torch, pre-compiling ops will be disabled
+2. requirement already satisfied:
+     numpy 2.2.6
+     torch 2.3.1
+     opencv_python 4.13.0.92
+     loguru 0.7.3
+     tqdm 4.67.3
+     torchvision 0.18.1
+     thop 0.0.1
+     ninja 1.13.0
+     psutil 7.2.2
+     pycocotools 2.0.11
+     onnx 1.20.1
+     onnx-simplifier 0.4.10
+     rich 14.3.2
+     protobuf 6.33.5
+     typing_extensions 4.15.0
+     ml_dtypes 0.5.4
+     filelock 3.20.3
+     sympy 1.40.0
+     networkx 3.2.1
+     jinja2 3.1.6
+     fsspec 2026.2.0
+     mkl 2021.4.0
+     intel-openmp 2021.4.0
+     tbb 2021.13.1
+     MarkupSafe 3.0.2
+     colorama 0.4.6
+     win32-setctime 1.2.0
+     markdown-it-py 4.0.0
+     pygments 2.19.2
+     mdurl 0.1.2
+     mpmath 1.3.0
+     absl-py 2.4.0
+     grpcio 1.78.0
+     markdown 3.10.2
+     packaging 25.0
+     pillow 11.1.0
+     setuptools 80.10.2
+     tensorboard-data-server 0.7.2
+     werkzeug 3.1.5
+3. warning package yolox.layers.cocoeval is absent from packages configuration
+```
+
+testing via:
+```
+python (3.10.13)
+import cv2: DLL load failed while importing cv2
+pip install opencv-python: requirement already satisfied
+pip uninstall opencv-python opencv-python-headless -y
+conda install -c conda-forge opencv
+```
+chatGPT suggested that i uninstall python 3.13 because it might be confusing the dll loading.
+it didn't help. The result of a long process:
+```
+then it suggested i install numpy<2
+pip uninstall numpy -y
+conda install numpy=1.26 -c conda-forge
+conda remove opencv -y
+conda install -c conda-forge opencv
+now it wants me to install Microsoft Visual C++ Redistributable for Visual Studio 2015–2022
+https://aka.ms/vc14/vc_redist.x64.exe 
+nope didn't work
+conda remove opencv libopencv py-opencv -y
+pip install opencv-python
+python -c "import cv2; print(cv2.__version__)"
+4.13.0
+```
+I think I'm ready to try the training script again.
+
+In YOLOX directory:
+```
+python tools/train.py -f exps/example/custom/yolox_s_3classes.py -d 1 -b 8 --fp16 -o -c yolox_s.pth
+```
+
+Fails this way:
+```
+python tools/train.py -f exps/example/custom/yolox_s_3classes.py -d 1 -b 8 --fp16 -o -c yolox_s.pth
+Traceback (most recent call last):
+  File "C:\Users\Bryan\Desktop\home\OSU\YOLOX\tools\train.py", line 13, in <module>
+    from yolox.core import launch
+  File "C:\Users\Bryan\Desktop\home\OSU\YOLOX\yolox\core\__init__.py", line 5, in <module>
+    from .launch import launch
+  File "C:\Users\Bryan\Desktop\home\OSU\YOLOX\yolox\core\launch.py", line 16, in <module>
+    import yolox.utils.dist as comm
+  File "C:\Users\Bryan\Desktop\home\OSU\YOLOX\yolox\utils\__init__.py", line 5, in <module>
+    from .boxes import *
+  File "C:\Users\Bryan\Desktop\home\OSU\YOLOX\yolox\utils\boxes.py", line 7, in <module>
+    import torchvision
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torchvision\__init__.py", line 6, in <module>
+    from torchvision import _meta_registrations, datasets, io, models, ops, transforms, utils
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torchvision\datasets\__init__.py", line 1, in <module>
+    from ._optical_flow import FlyingChairs, FlyingThings3D, HD1K, KittiFlow, Sintel
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torchvision\datasets\_optical_flow.py", line 10, in <module>
+    from PIL import Image
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\PIL\Image.py", line 100, in <module>
+    from . import _imaging as core
+ImportError: DLL load failed while importing _imaging: The specified module could not be found.
+```
+Apparently this is a pillow issue.
+```
+pip uninstall pillow -y
+pip install --upgrade pillow
+```
+Didn't work
+```
+pip uninstall pillow -y
+conda remove pillow -y
+pip install --upgrade pillow
+```
+Had a cuda error. do this:
+```
+python tools/train.py -f exps/example/custom/yolox_s_3classes.py -d 1 -b 8 -o -c yolox_s.pth --fp16=False
+```
+This error:
+```
+python tools/train.py -f exps/example/custom/yolox_s_3classes.py -d 1 -b 8 -o -c yolox_s.pth --fp16=False
+
+A module that was compiled using NumPy 1.x cannot be run in
+NumPy 2.2.6 as it may crash. To support both 1.x and 2.x
+versions of NumPy, modules must be compiled with NumPy 2.0.
+Some module may need to rebuild instead e.g. with 'pybind11>=2.12'.
+
+If you are a user of the module, the easiest solution will be to
+downgrade to 'numpy<2' or try to upgrade the affected module.
+We expect that some modules will need time to support NumPy 2.
+
+Traceback (most recent call last):  File "C:\Users\Bryan\Desktop\home\OSU\YOLOX\tools\train.py", line 13, in <module>
+    from yolox.core import launch
+  File "C:\Users\Bryan\Desktop\home\OSU\YOLOX\yolox\core\__init__.py", line 5, in <module>
+    from .launch import launch
+  File "C:\Users\Bryan\Desktop\home\OSU\YOLOX\yolox\core\launch.py", line 16, in <module>
+    import yolox.utils.dist as comm
+  File "C:\Users\Bryan\Desktop\home\OSU\YOLOX\yolox\utils\__init__.py", line 5, in <module>
+    from .boxes import *
+  File "C:\Users\Bryan\Desktop\home\OSU\YOLOX\yolox\utils\boxes.py", line 7, in <module>
+    import torchvision
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torchvision\__init__.py", line 6, in <module>
+    from torchvision import _meta_registrations, datasets, io, models, ops, transforms, utils
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torchvision\models\__init__.py", line 2, in <module>
+    from .convnext import *
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torchvision\models\convnext.py", line 8, in <module>
+    from ..ops.misc import Conv2dNormActivation, Permute
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torchvision\ops\__init__.py", line 23, in <module>
+    from .poolers import MultiScaleRoIAlign
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torchvision\ops\poolers.py", line 10, in <module>
+    from .roi_align import roi_align
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torchvision\ops\roi_align.py", line 4, in <module>
+    import torch._dynamo
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torch\_dynamo\__init__.py", line 64, in <module>
+    torch.manual_seed = disable(torch.manual_seed)
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torch\_dynamo\decorators.py", line 50, in disable
+    return DisableContext()(fn)
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torch\_dynamo\eval_frame.py", line 410, in __call__
+    (filename is None or trace_rules.check(fn))
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torch\_dynamo\trace_rules.py", line 3378, in check
+    return check_verbose(obj, is_inlined_call).skipped
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torch\_dynamo\trace_rules.py", line 3361, in check_verbose
+    rule = torch._dynamo.trace_rules.lookup_inner(
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torch\_dynamo\trace_rules.py", line 3442, in lookup_inner
+    rule = get_torch_obj_rule_map().get(obj, None)
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torch\_dynamo\trace_rules.py", line 2782, in get_torch_obj_rule_map
+    obj = load_object(k)
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torch\_dynamo\trace_rules.py", line 2811, in load_object
+    val = _load_obj_from_str(x[0])
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torch\_dynamo\trace_rules.py", line 2795, in _load_obj_from_str
+    return getattr(importlib.import_module(module), obj_name)
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\importlib\__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torch\nested\_internal\nested_tensor.py", line 417, in <module>
+    values=torch.randn(3, 3, device="meta"),
+C:\Users\Bryan\miniconda3\envs\yolox\lib\site-packages\torch\nested\_internal\nested_tensor.py:417: UserWarning: Failed to initialize NumPy: _ARRAY_API not found (Triggered internally at ..\torch\csrc\utils\tensor_numpy.cpp:84.)
+  values=torch.randn(3, 3, device="meta"),
+usage: YOLOX train parser [-h] [-expn EXPERIMENT_NAME] [-n NAME] [--dist-backend DIST_BACKEND] [--dist-url DIST_URL] [-b BATCH_SIZE] [-d DEVICES] [-f EXP_FILE] [--resume] [-c CKPT]
+                          [-e START_EPOCH] [--num_machines NUM_MACHINES] [--machine_rank MACHINE_RANK] [--fp16] [--cache [CACHE]] [-o] [-l LOGGER]
+                          ...
+YOLOX train parser: error: argument --fp16: ignored explicit argument 'False'
+```
+chatGPT says to do this:
+```
+pip install "numpy<2"
+```
+That didn't work.
+All this because I really just need a GPU. Just use Google Colab!
+
+
+
+
+
+
+
+
 
 <span style="color:red;">
 to do inference:
