@@ -105,13 +105,17 @@ The project is developed in 7 phases.
 ## **Phase 1 - Data Set**
 
 <span style="color:red;">
-Data set – 3 rotated and translated objects. Custom 360° OBB annotation tool. Novel objects: 3 new objects, rotated and translated. All images annotated with tool. Create AA bounding boxes for use with standard YOLOX. Letterboxing from 640x360 to 640x640. Augmentation – rotate, translate, lighting, noise. Divide into training and test set. 
+Data set – 3 rotated and translated objects. Custom 360° OBB annotation tool. Novel objects: 3 new objects, rotated and translated. All images annotated with tool. Create AA bounding boxes for use with standard YOLOX. Letterboxing from 640x360 to 640x640. Augmentation – rotate, translate, lighting, noise. Divide into training and test set.
+
+Completed 3/3/2026
 </span>
 
 ## **Phase 2 - YOLOX AABB**
 
 <span style="color:red;">
 Prove that I can train the network for custom classes.
+
+Completed 3/4/2026
 </span>
 
 ## **Phase 3 - OBB 360° head**
@@ -736,38 +740,13 @@ per class AR:
 To do inference (something like this):
 ```
 python tools/demo.py image \
-    -n yolox-s \
     -f exps/example/custom/yolox_s_3classes.py \
     -c YOLOX_outputs/yolox_s_3classes/best_ckpt.pth \
     --path ../YOLOX-OneShot/datasets/COCO3/val2017 \
-    --conf 0.001 \
+    --conf 0.5 \
     --tsize 640 \
     --save_result \
     --device cuda
 ```
-YOLOX_outputs/
- └── mydata/
-      └── best_ckpt.pth   # usually the best validation model
-
-python tools/demo.py image \
-    -f exps/example/yolox_mydata.py \
-    -c YOLOX_outputs/mydata/best_ckpt.pth \
-    --path datasets/mydataset/val2017/img10.jpg \
-    --conf 0.25 \
-    --nms 0.45 \
-    --tsize 640 \
-    --save_result
-```
-
-do an entire folder:
-
-```
-python tools/demo.py image \
-    -f exps/example/yolox_mydata.py \
-    -c YOLOX_outputs/mydata/best_ckpt.pth \
-    --path datasets/mydataset/val2017 \
-    --conf 0.25 \
-    --nms 0.45 \
-    --tsize 640 \
-    --save_result
-```
+First custom detections - first successful training 3/4/2026 10pm
+![First Custom Detection](datasets/COCO3/results/2026_03_05_06_01_12/three.450.50_640x640.png)
