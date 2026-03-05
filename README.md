@@ -673,17 +673,68 @@ pip install "numpy<2"
 That didn't work.
 All this because I really just need a GPU. Just use Google Colab!
 
+```
+https://colab.research.google.com/
+yolox-3class-aa.ipynb
+change runtime to gpu (T4)
+%cd /content/YOLOX-fork
+# Install core dependencies first
+!pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+!pip install opencv-python loguru tqdm pycocotools tabulate psutil tensorboard thop ninja onnx onnx-simplifier==0.5.0
+# Install the rest
+!pip install -v -e . --no-deps
+# verify yolox version
+import yolox
+print("YOLOX version:", yolox.__version__)
+```
+Now Im ready to train again!
+```
+# verify the GPU is still there
+!nvidia-smi
+# train
+!python tools/train.py -f exps/example/custom/yolox_s_3classes.py -d 1 -b 8 --fp16 -o -c yolox_s.pth
+```
+It worked! Here is the result of 100 epochs:
+```
+| class   | AP     | class   | AP     | class   | AP     |
+|:--------|:-------|:--------|:-------|:--------|:-------|
+| candy   | 92.995 | cards   | 95.265 | cheeto  | 91.728 |
+per class AR:
+| class   | AR     | class   | AR     | class   | AR     |
+|:--------|:-------|:--------|:-------|:--------|:-------|
+| candy   | 94.000 | cards   | 95.714 | cheeto  | 93.636 |
+```
 
+Next time I train I should do W&B like this
+```
+python tools/train.py -n yolox-s -d 8 -b 64 --fp16 -o [--cache] --logger wandb wandb-project <project name>
+                         yolox-m
+                         yolox-l
+                         yolox-x
+```
 
+To evaluate the validation performance:
+```
+python -m yolox.tools.eval \
+-f exps/example/custom/yolox_s_3classes.py \
+-c YOLOX_outputs/yolox_s_3classes/best_ckpt.pth \
+-b 8 \
+-d 1 \
+--conf 0.001
+```
 
-
-
-
-
-
-<span style="color:red;">
-to do inference:
-</span>
+To do inference (something like this):
+```
+python tools/demo.py image \
+-n yolox-s \
+-c YOLOX_outputs/yolox_s_3classes/best_ckpt.pth \
+--path /content/test_images \
+--conf 0.25 \
+--nms 0.45 \
+--tsize 640 \
+--save_result \
+--device cuda
+```
 
 ```
 YOLOX_outputs/
