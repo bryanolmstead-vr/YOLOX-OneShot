@@ -673,6 +673,28 @@ pip install "numpy<2"
 That didn't work.
 All this because I really just need a GPU. Just use Google Colab!
 
+```
+https://colab.research.google.com/
+yolox-3class-aa.ipynb
+change runtime to gpu (T4)
+%cd /content/YOLOX-fork
+# Install core dependencies first
+!pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+!pip install opencv-python loguru tqdm pycocotools tabulate psutil tensorboard thop ninja onnx onnx-simplifier==0.5.0
+# Install the rest
+!pip install -v -e . --no-deps
+# verify yolox version
+import yolox
+print("YOLOX version:", yolox.__version__)
+```
+Now Im ready to train again!
+```
+# verify the GPU is still there
+!nvidia-smi
+# train
+!python tools/train.py -f exps/example/custom/yolox_s_3classes.py -d 1 -b 8 --fp16 -o -c yolox_s.pth
+```
+
 
 
 
