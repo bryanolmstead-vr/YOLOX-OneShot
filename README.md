@@ -36,6 +36,8 @@ In the deep learning community, **One-Shot Detection** is the term used to descr
 
 ## **Project Requirements**
 
+Table 1 defines the project requirements. The Movidius Myriad X is a Vision Processing Unit (VPU) used in the VIM-303 camera. The Qualcomm QCS8550 contains a Neural Processing Unit (NPU) and is used in the Luxonis OAK4D camera. Both of these cameras are used by Visual Robotics for Edge-AI robotics applications. It is desirable to determine orientation of objects to ±180° (360°), beyond the typical range of YOLO-OBB implementations that provide ±90° (180°). A set of 100 templates is provided for training of novel objects in the field.
+
 <table border="1">
   <tr style="background-color: lightgray;">
     <th>Parameter</th>
@@ -55,9 +57,11 @@ In the deep learning community, **One-Shot Detection** is the term used to descr
   </tr>
 </table>
 
+**Table 1 - Project Requirements**
+
 ## **Project Phases**
 
-The project is developed in 7 phases.
+The project is developed in 7 phases, as shown in Table 2. Phases 1 and 2 result in training of an existing deep learning network. Phase 3 enhances the stock YOLOX network to provide full 360° oriented bounding boxes. Phase 4 develops the framework for evaluating field generated templates. This phase explores the behavior of similarity maps with object translation, rotation, and scale, as well as its discrimination capability. Phase 5 processes the feature map outputs to yield true object classifications, locations and orientations, which includes Non-Maximum Suppression (NMS). Phase 6 explores the additional performance benefit of creating a metric similarity feature map using a Siamese network. Phase 7 deploys the networks on the Edge AI hardware to test performance (speed and accuracy) in real-world environments.
 
 <table border="1">
   <tr style="background-color: lightgray;">
@@ -102,21 +106,103 @@ The project is developed in 7 phases.
   </tr>
 </table>
 
+**Table 2 - Project Phases**
+
 ## **Phase 1 - Data Set**
 
-<span style="color:red;">
-Data set – 3 rotated and translated objects. Custom 360° OBB annotation tool. Novel objects: 3 new objects, rotated and translated. All images annotated with tool. Create AA bounding boxes for use with standard YOLOX. Letterboxing from 640x360 to 640x640. Augmentation – rotate, translate, lighting, noise. Divide into training and test set.
+Images were captured of consumer packaged goods using the VIM-303 camera. Resolution was 640x360 RGB. All of the objects were on a black background. Three objects were used during training and validation: a box of M&Ms, a deck of cards, and a bag of Cheetos. 
 
-Completed 3/3/2026
-</span>
+Most images contained a single object, while some contained three objects. Objects were viewed at distances of 200mm, 300mm, 450mm, and 600mm from the camera. Objects were translated and rotated within the field of view.
+
+145 images were captured, with a split of 80% (116 images) for training and 20% (29 images) for validation. Images were letterboxed from 640x360 to 640x640 pixels over a black background. 
+
+A separate dataset was created with 3 objects at a time (M&Ms, cards, Cheetos) on a white background. Pictures of additional objects were captured on the white background: anodized aluminum plates of various shapes, black plastic auto parts, a box of cereal, a bag of rice, a box of noodle roni, a box of milk duds, individual playing cards, and bags of pretzels, doritos, and lays potato chips. These are intended to be used for creating custom templates for one-shot detection. 
+
+A custom annotation tool was developed using Python, which enabled the recording of full 360° orientation with stored data consisting of (id, cx, cy, w, h, θ). For each image, the user clicks on the upper left corner of the object, then clicks on the lower left corner to specify the left edge. Then a rubber-band box is drawn that is anchored to the upper left corner and has a fixed length side as specified by the first two mouse clicks. The box width and orientation is adjusted to match the mouse location and is frozen after the third mouse click, yielding an oriented bounding box (OBB), shown in Figure 1 (left). Oriented bounding boxes were also converted to axis-aligned bounding boxes (AABB), per standard YOLOX definition, shown in Figure 1 (right). 
+
+<img src="media/annotation.png" style="border:2px solid black; padding:5px;" width="800">
+
+**Figure 1 - Annotations**
 
 ## **Phase 2 - YOLOX AABB**
 
-<span style="color:red;">
-Prove that I can train the network for custom classes.
+The 116 image training and 29 image validation set with axis-aligned bounding box annotations were used for training a YOLOX network with pre-trained weights from COCO. The purpose was primarily to serve as a performance baseline and to confirm proper operation of the annotation tool and training process. 
 
-Completed 3/4/2026
-</span>
+Weights & Biases was used to capture training loss, validation loss, and training accuracy vs training epochs. Training hyperparameters are shown in Table 3. The learning rate schedule is shown in Figure 2. The training loss is shown in Figure 3. The validation accuracy is shown in Figure 4. Table 4 shows the Average Precision (AP) and Average Recall (AR) per class. 
+
+<table border="1">
+  <tr style="background-color: lightgray;">
+    <th>Hyperparameter</th>
+    <th style="width: 250px; word-wrap: break-word;">Value</th>
+  </tr>
+  <tr>
+    <td>Epochs</td>
+    <td>100</td>
+  </tr>
+  <tr>
+    <td>Optimizer</td>
+    <td>SGD</td>
+  </tr>
+  <tr>
+    <td>Learning Rate</td>
+    <td>Adjustable with 3 warmup epochs<br>
+        (Figure 2)</td>
+  </tr>
+  <tr>
+    <td>Weight Decay</td>
+    <td>5E-4</td>
+  </tr>
+  <tr>
+    <td>Augmentations</td>
+    <td>Mosaic 70%<br>
+        Mixup 50%<br>
+        HSV 100%<br>
+        RandomAffine:<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;Rotation 180°<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;Translate 0.1<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;Scale 0.5 to 1.5<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;Shear 2.0</td>
+  </tr>
+</table>
+
+**Table 3 - Hyperparameters**
+
+<img src="media/WnB-LR-Schedule.png" width="75%" style="border:2px solid black; padding:4px;">
+
+**Figure 2 - Learning Rate Schedule**
+
+<img src="media/WnB-TrainingLoss.png" width="75%" style="border:2px solid black; padding:4px;">
+
+**Figure 3 - Training Loss**
+
+<img src="media/WnB-ValAccuracy.png" width="75%" style="border:2px solid black; padding:4px;">
+
+**Figure 4 - Validation Accuracy (77.5%)**
+
+<table border="1">
+  <tr style="background-color: lightgray;">
+    <th>Class</th>
+    <th>AP</th>
+    <th>AR</th>
+  </tr>
+  <tr>
+    <td>candy</td>
+    <td>75.2%</td>
+    <td>79.0%</td>
+  </tr>
+  <tr>
+    <td>cards</td>
+    <td>78.4%</td>
+    <td>80.7%</td>
+  </tr>
+  <tr>
+    <td>cheetos</td>
+    <td>79.0%</td>
+    <td>81.8%</td>
+  </tr>
+</table>
+
+**Table 4 - Average Precision (AP), Average Recall (AR)**
 
 ## **Phase 3 - OBB 360° head**
 
@@ -384,7 +470,7 @@ pip3 install -v -e .
 
 the pip3 install uninstalled everything i did previously
 
-**3/4/2026** - 3:30pm
+**3/4/2026** - 3:30pm - 11:30pm
 
 ```
 PS C:\Users\Bryan\Desktop\home\OSU\yolox\tools> python
@@ -750,3 +836,36 @@ python tools/demo.py image \
 ```
 First custom detections - first successful training 3/4/2026 10pm
 ![First Custom Detection](datasets/COCO3/results/2026_03_05_06_01_12/three.450.50_640x640.png)
+
+**3/5/2026**
+
+https://colab.research.google.com/
+yolox-3class-aa.ipynb
+
+To log with weights & biases:
+
+python tools/train.py -f exps/example/custom/yolox_s_3classes.py -d 1 -b 8 --fp16 -o --logger wandb wandb-project YOLOX -c ./YOLOX_outputs/yolox_s.pth
+
+Results:
+
+| class   | AP     | class   | AP     | class   | AP     |
+|:--------|:-------|:--------|:-------|:--------|:-------|
+| candy   | 75.184 | cards   | 78.414 | cheeto  | 78.976 |
+
+per class AR:
+
+| class   | AR     | class   | AR     | class   | AR     |
+|:--------|:-------|:--------|:-------|:--------|:-------|
+| candy   | 79.000 | cards   | 80.714 | cheeto  | 81.818 |
+
+![Learning Rate Schedule](media/WnB-LR-Schedule.png)
+
+**Learning Rate Schedule**
+
+![Training Loss](media/WnB-TrainingLoss.png)
+
+**Training Loss**
+
+![Validation Accuracy](media/WnB-ValAccuracy.png)
+
+**Validation Accuracy (77.5%)**

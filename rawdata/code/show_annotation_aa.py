@@ -65,8 +65,8 @@ def visualize(filelist):
             continue
 
         stem = os.path.splitext(fname)[0]
-        txtfile = "../../labels/YOLOX-Std/" + stem + "_aa.txt"
-
+        txtfile = stem + "_aa.txt"
+        print(txtfile)
         display = img.copy()
 
         if os.path.exists(txtfile):
@@ -87,7 +87,7 @@ def visualize(filelist):
 
                     display = draw_aa(display, corners)
 
-                    cv2.putText(display,txtfile, (10, 10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1, cv2.LINE_AA)
+                    #cv2.putText(display,txtfile, (10, 10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1, cv2.LINE_AA)
 
 
         cv2.imshow("AA Bounding Box Viewer", display)
