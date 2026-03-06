@@ -837,7 +837,7 @@ python tools/demo.py image \
 First custom detections - first successful training 3/4/2026 10pm
 ![First Custom Detection](datasets/COCO3/results/2026_03_05_06_01_12/three.450.50_640x640.png)
 
-**3/5/2026**
+**3/5/2026 - 3hrs**
 
 https://colab.research.google.com/
 yolox-3class-aa.ipynb
