@@ -846,7 +846,7 @@ To log with weights & biases:
 
 python tools/train.py -f exps/example/custom/yolox_s_3classes.py -d 1 -b 8 --fp16 -o --logger wandb wandb-project YOLOX -c ./YOLOX_outputs/yolox_s.pth
 
-Results:
+Results: (AP50_95)
 
 | class   | AP     | class   | AP     | class   | AP     |
 |:--------|:-------|:--------|:-------|:--------|:-------|
@@ -857,6 +857,9 @@ per class AR:
 | class   | AR     | class   | AR     | class   | AR     |
 |:--------|:-------|:--------|:-------|:--------|:-------|
 | candy   | 79.000 | cards   | 80.714 | cheeto  | 81.818 |
+
+99.8% AP50 (correct class identification)
+AP(50:95) aka mAP @ IoU 0.5:0.95 = averages with IoU of 0.5, 0.55, 0.60, ... 0.95
 
 ![Learning Rate Schedule](media/WnB-LR-Schedule.png)
 
@@ -869,3 +872,81 @@ per class AR:
 ![Validation Accuracy](media/WnB-ValAccuracy.png)
 
 **Validation Accuracy (77.5%)**
+
+**3/7/26 - 10:30am sat**
+
+Working on **Phase 3**:
+
+OBB head: (cos θ, sin θ) unit vector.
+Loss function: dot product, how to normalize so vector tries to be unit vector.
+Combined loss function.
+Train existing classifier head on 3 objects. 
+Train existing x,y,w,h head on 3 objects.
+Configuration of network – YOLOX + OBB head.
+Training hyperparameters.
+Graph of training loss, test loss vs epochs.
+Loss = 1 - normalized dot product = 1 – cos dθ ~ dθ
+
+To add OBB360:
+
+change data from [x_center, y_center, width, height, obj_conf, class_probs...]
+
+to [x_center, y_center, width, height, cosθ, sinθ, obj_conf, class_probs...]
+
+dataset loader: parse theta, convert to cosθ, sinθ
+
+augmentations: rotate correctly
+
+detection head: add 2 orientation outputs
+
+loss function: add angular regression loss
+
+**where?**
+
+dataset loader is in either `yolox/data/datasets/coco.py` or in my custom dataset class
+
+modify the dataset parser, tensor size, collate function if needed
+
+autmentations must rotate angles correctly. don't handle flips, add angle for rotations
+
+modifying head: `yolox/models/yolo_head.py` currently predicts 4 box coordinates, now need to predict 6 values: `x, y, w, h, cosθ, sinθ` regression conv output channels = 4 * anchors, now 6 * anchors
+
+loss function: box regression loss is the same, but later should use rotated IoU.  
+
+For orientation regression loss = L2 loss on cos, sin:
+
+``L_angle = (cosθ_pred − cosθ_gt)² + (sinθ_pred − sinθ_gt)²``
+
+or cosine similarity:
+
+`L_angle = 1 − (cosθ_pred·cosθ_gt + sinθ_pred·sinθ_gt)`
+
+total loss (with `λ3 = 1.0`):
+
+`L_total = L_box + λ1 * L_obj + λ2 * L_cls + λ3 * L_angle`
+
+for prediction, compute θ:
+
+`θ = atan2(sinθ_pred, cosθ_pred)
+θ_deg = θ * 180 / π`
+
+Created YOLOX-OneShot/datsets/OBB360 with this structure:
+```
+YOLOX-Oneshot/datasets/OBB360
+ ├── train2017/ candy.200.01_640x640.png
+ ├── val2017/   candy.300.02_640x640.png
+ └── annotations/
+      ├── instances_train2017.json
+      ├── instances_val2017.json
+      ├── train2017/ candy.200.01_640x640.txt
+      └── val2017/   candy.300.02_640x640.txt
+```
+Each annotation file is of the format (normalized coordianates and radians):
+```
+x, y, w, h, θ
+```
+
+`x,y` in my preferred format is the center, whereas COCO defines it as the upper left. the yolox dataloader reads COCO style annotations and converts them immediately where `x,y` is the center. so i just need to bypass the conversion.
+
+Adjusted annotations to match the 640x640 letterboxed images. For images with multiple objects, annotations were combined.
+
