@@ -873,7 +873,7 @@ AP(50:95) aka mAP @ IoU 0.5:0.95 = averages with IoU of 0.5, 0.55, 0.60, ... 0.9
 
 **Validation Accuracy (77.5%)**
 
-**3/7/26 - 10:30am sat**
+**3/7/26 - 1hr**
 
 Working on **Phase 3**:
 
@@ -949,4 +949,11 @@ x, y, w, h, θ
 `x,y` in my preferred format is the center, whereas COCO defines it as the upper left. the yolox dataloader reads COCO style annotations and converts them immediately where `x,y` is the center. so i just need to bypass the conversion.
 
 Adjusted annotations to match the 640x640 letterboxed images. For images with multiple objects, annotations were combined.
+
+**3/9/26 - 3:45pm wed**
+
+I didn't quite get finished with anotations. just the images are in the correct directory
+I moved the annotations to the dataset directory
+For the "three" annotations, they are three annotations, one for each object
+Result: id, x, y, w, h, θ with id [0,1,2], x,y,w,h [0,1], θ [-180,180]
 
