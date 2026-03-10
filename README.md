@@ -950,58 +950,29 @@ x, y, w, h, θ
 
 Adjusted annotations to match the 640x640 letterboxed images. For images with multiple objects, annotations were combined.
 
-**3/9/26 - 1hr**
+**3/9/26 - 3hr**
 
 I didn't quite get finished with anotations. just the images are in the correct directory
 I moved the annotations to the dataset directory
 For the "three" annotations, they are three annotations, one for each object
 Result: id, x, y, w, h, θ with id [0,1,2], x,y,w,h [0,1], θ [-180,180]
 
-**10pm**
-
-created yolo2obb.py to take annotation files and create json files
+Created yolo2obb.py to take annotation files and create json files
 
 Saving `yolox_s_3classes.py` as `yolox_s_obb_3classes.py`
 
-**What to do next:**
+Copied `YOLOX/yolox/data/datasets/coco.py` to `obb.py`
 
-change data from [x_center, y_center, width, height, obj_conf, class_probs...]
+Modified class from COCODataset to OBBDataset. Changed load_anno_from_ids to directly use bounding box angle.
+Add theta (converted from degrees to radians). Change from 5 to 6 elements in data.
 
-to [x_center, y_center, width, height, cosθ, sinθ, obj_conf, class_probs...]
+Modified `YOLOX/yolox/data/datasets/data_augment.py` to accomodate 6 elements instead of 5 (including angle).
 
-dataset loader: parse theta, convert to cosθ, sinθ
+For sanity, I should train as is. it should predict AA bounding boxes but with the aspect ratio of the OBB.
+They should be centered properly and seen as the right aspect ratio.
 
-augmentations: rotate correctly
+**Next Steps**
 
-detection head: add 2 orientation outputs
+Copy jupyter notebook to OBB. load the correct data set. train. get AA bounding boxes - otherwise good training.
 
-loss function: add angular regression loss
-
-**where?**
-
-dataset loader is in either `yolox/data/datasets/coco.py` or in my custom dataset class
-
-modify the dataset parser, tensor size, collate function if needed
-
-autmentations must rotate angles correctly. don't handle flips, add angle for rotations
-
-modifying head: `yolox/models/yolo_head.py` currently predicts 4 box coordinates, now need to predict 6 values: `x, y, w, h, cosθ, sinθ` regression conv output channels = 4 * anchors, now 6 * anchors
-
-loss function: box regression loss is the same, but later should use rotated IoU.  
-
-For orientation regression loss = L2 loss on cos, sin:
-
-``L_angle = (cosθ_pred − cosθ_gt)² + (sinθ_pred − sinθ_gt)²``
-
-or cosine similarity:
-
-`L_angle = 1 − (cosθ_pred·cosθ_gt + sinθ_pred·sinθ_gt)`
-
-total loss (with `λ3 = 1.0`):
-
-`L_total = L_box + λ1 * L_obj + λ2 * L_cls + λ3 * L_angle`
-
-for prediction, compute θ:
-
-`θ = atan2(sinθ_pred, cosθ_pred)
-θ_deg = θ * 180 / π`
+Add the (cos theta, sin theta) head and loss function. retrain to get OBB. create visualizer of OBB.
