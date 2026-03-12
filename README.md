@@ -971,13 +971,55 @@ Modified `YOLOX/yolox/data/datasets/data_augment.py` to accomodate 6 elements in
 For sanity, I should train as is. it should predict AA bounding boxes but with the aspect ratio of the OBB.
 They should be centered properly and seen as the right aspect ratio.
 
-**3/11/26 - 6:45pm**
+**3/11/26 - 4hrs**
 
 Copied jupyter notebook to yolox_3class_obb.ipynb. 
 ```
 https://colab.research.google.com/
 yolox-3class-obb.ipynb
+checkout YOLOX obb360
+checkout YOLOX-OneShot trainOBB
 change runtime to gpu (T4)
+remember W&B:
+  user = wandbai/olmsteab-oregon-state-university or olmsteab@oregonstate.edu
+  pwd  = myWandBpwd123!
+  key  = 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
+```
+Got error `data_augment.py, line 206, labels = targets[:, 5].copy(), index 5 is out of bounds`
+Fixed
+
+Got error `data_augment.py, line 97, apply_affine_to_obboxes, xc, yc, w, h, theta, cls = targets[i], expected 6 got 5`
+
+Many hours with ChatGPT to try to fix everything. seems like data loading is correct but it doesn't train right.
+In yolo_head.py get_losses the data doesn't print correctly.
+Some of the data:
+```
+BLO Batch 0 - raw labels slice [0:6]:
+tensor([[7.6000e+01, 3.2550e+02, 1.1600e+02, 1.6600e+02, 5.9891e-03, 1.0000e+00]],
+       device='cuda:0', dtype=torch.float16)
+/content/YOLOX-fork/yolox/models/yolo_head.py:493: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with torch.cuda.amp.autocast(enabled=False):
+BLO Batch 1 - raw labels slice [0:6]:
+tensor([[ 32.8438, 446.0000, 215.7500, 356.7500,  -0.7983,   0.0000],
+        [357.2500, 640.0000, 215.7500, 640.0000,  -0.7983,   0.0000],
+        [  0.0000, 640.0000, 640.0000, 207.3750,  -0.8071,   1.0000],
+        [ 33.7500, 640.0000, 640.0000, 640.0000,  -1.3711,   2.0000]],
+       device='cuda:0', dtype=torch.float16)
+BLO Batch 2 - raw labels slice [0:6]:
+tensor([[197.5000, 295.5000, 146.5000, 155.0000,   2.0957,   2.0000]],
+       device='cuda:0', dtype=torch.float16)
+```
+Then I get this:
+```
+2026-03-12 05:47:43 | ERROR    | yolox.core.trainer:79 - Exception in training: 
+ File "/content/YOLOX-fork/yolox/models/yolo_head.py", line 570, in simota_matching
+    _, pos_idx = torch.topk(
+    │            │     └ <built-in method topk of type object at 0x7841490e4b40>
+    │            └ <module 'torch' from '/usr/local/lib/python3.12/dist-packages/torch/__init__.py'>
+    └ tensor([], device='cuda:0', size=(3, 0), dtype=torch.int64)
+
+RuntimeError: selected index k out of range
 ```
 
+**Next**
 Add the (cos theta, sin theta) head and loss function. retrain to get OBB. create visualizer of OBB.
