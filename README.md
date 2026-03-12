@@ -971,8 +971,13 @@ Modified `YOLOX/yolox/data/datasets/data_augment.py` to accomodate 6 elements in
 For sanity, I should train as is. it should predict AA bounding boxes but with the aspect ratio of the OBB.
 They should be centered properly and seen as the right aspect ratio.
 
-**Next Steps**
+**3/11/26 - 6:45pm**
 
-Copy jupyter notebook to OBB. load the correct data set. train. get AA bounding boxes - otherwise good training.
+Copied jupyter notebook to yolox_3class_obb.ipynb. 
+```
+https://colab.research.google.com/
+yolox-3class-obb.ipynb
+change runtime to gpu (T4)
+```
 
 Add the (cos theta, sin theta) head and loss function. retrain to get OBB. create visualizer of OBB.
