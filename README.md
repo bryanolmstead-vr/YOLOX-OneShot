@@ -1079,3 +1079,5 @@ Various other changes to get the scaling right and to display correctly. First s
 <img src="media/AABB with OBB data 2026.03.12.png" style="border:2px solid black; padding:5px;" width="800">
 
 <img src="media/AABB with OBB loss 2026.03.12.png" style="border:2px solid black; padding:5px;" width="800">
+
+validation is still terrible. it seems that it must be using the data differently because looking at the prediction results it correctly classifies and sort of does the bounding box correctly. Not sure why the bounding box isn't better, since the AABB was really good.
