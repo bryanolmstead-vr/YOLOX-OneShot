@@ -1021,7 +1021,7 @@ Then I get this:
 RuntimeError: selected index k out of range
 ```
 
-**3/12/26 - 9am-12pm, 3pm-**
+**3/12/26 - 12hrs**
 
 Follow the trail of what happens during training:
 ```
