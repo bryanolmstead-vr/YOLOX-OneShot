@@ -1021,5 +1021,61 @@ Then I get this:
 RuntimeError: selected index k out of range
 ```
 
-**Next**
-Add the (cos theta, sin theta) head and loss function. retrain to get OBB. create visualizer of OBB.
+**3/12/26 - 9am-12pm, 3pm-**
+
+Follow the trail of what happens during training:
+```
+python tools/train.py -f exps/example/custom/yolox_s_obb_3classes.py -d 1 -b 8 --fp16 -o --logger wandb wandb-project YOLOX -c ./YOLOX_outputs/yolox_s.pth
+yolox_s_obb_3classes: defines OBBDataset for get_dataset and get_eval_dataset
+from yolox.data.datasets.obb import OBBDataset
+obb.py: load_anno_from_ids, __getitem__(idx) appears to return img,[xc,yc,w,h,theta,class],(640,640),idx
+```
+
+I signed up for a OSU account that lets me use the GPU on colab
+
+This error in collate `RuntimeError: stack expects each tensor to be equal size, but got [1, 6] at entry 0 and [3, 6] at entry 2` has been killing me all day. it is from `obb.py` in `__getitem__`. So I thought this is getting some data that has 3 objects in 1 image? But I'm able to get both 1 and 3 items:
+
+```
+BLO __getitem__ index=28, num_boxes=3, target=
+[[ 4.00499840e+02  3.32999960e+02  1.45890560e+02  5.50728000e+01 4.87836421e-01  0.00000000e+00]
+ [ 3.93500160e+02  2.00500160e+02  5.82150400e+01  7.83133200e+01 -1.00921779e-01  1.00000000e+00]
+ [ 2.36499840e+02  2.93500040e+02  1.13265280e+02  1.11323880e+02 2.34156566e-01  2.00000000e+00]]
+BLO __getitem__ index=13, num_boxes=1, target=
+[[308.        317.00012   121.264     165.64104    -1.9401299   1.       ]]
+```
+
+This is the error:
+```
+Traceback (most recent call last):
+tools/train.py, line 138, launch(
+/yolox/core/launch.py, line 98, in launch main_func(*args)
+tools/train.py, line 118, in main trainer.train()
+yolox/core/trainer.py, line 77, in train self.train_in_epoch()
+yolox/core/trainer.py, line 88, in train_in_epoch self.after_epoch()
+yolox/core/trainer.py, line 241, in after_epoch self.evaluate_and_save_model()
+yolox/core/trainer.py, line 359, in evaluate_and_save_model (ap50_95, ap50, summary), predictions = self.exp.eval(
+yolox/exp/yolox_base.py, line 353, in eval return evaluator.evaluate(...)
+yolox/evaluators/coco_evaluator.py, line 158, in evaluate for cur_iter, (imgs, _, info_imgs, ids) in enumerate(
+/usr/local/lib/python3.12/dist-packages/tqdm/std.py, line 1181, in __iter__ for obj in iterable:"
+/usr/local/lib/python3.12/dist-packages/torch/utils/data/dataloader.py, line 741, in __next__ data = self._next_data()
+dataloader.py, line 1518, in _next_data return self._process_data(...)
+dataloader.py, line 1586, in _process_data data.reraise()
+RuntimeError: Caught RuntimeError in DataLoader worker process 3.
+/usr/local/lib/python3.12/dist-packages/torch/utils/data/_utils/worker.py, line 358, in _worker_loop data = fetcher.fetch(index)
+/usr/local/lib/python3.12/dist-packages/torch/utils/data/_utils/fetch.py, line 57, in fetch return self.collate_fn(data)
+collate.py, line 401, in default_collate return collate(batch, collate_fn_map=default_collate_fn_map)
+collate.py, line 215, in collate collate(samples, collate_fn_map=collate_fn_map)
+collate.py, line 155, in collate return collate_fn_map[elem_type](batch, collate_fn_map=collate_fn_map)
+collate.py, line 288, in collate_numpy_array_fn return collate([torch.as_tensor(b) for b in batch], collate_fn_map=collate_fn_map)
+collate.py", line 155, in collate return collate_fn_map[elem_type](batch, collate_fn_map=collate_fn_map)
+collate.py", line 275, in collate_tensor_fn return torch.stack(batch, 0, out=out)
+RuntimeError: stack expects each tensor to be equal size, but got [1, 6] at entry 0 and [3, 6] at entry 2
+```
+
+I changed `data_augment.py` to use padding for ValTransform and that fixed it.
+
+Various other changes to get the scaling right and to display correctly. First sort of successful training of predicting AABB when given OBB and ignoring theta.
+
+<img src="media/AABB with OBB data 2026.03.12.png" style="border:2px solid black; padding:5px;" width="800">
+
+<img src="media/AABB with OBB loss 2026.03.12.png" style="border:2px solid black; padding:5px;" width="800">
