@@ -1080,4 +1080,33 @@ Various other changes to get the scaling right and to display correctly. First s
 
 <img src="media/AABB with OBB loss 2026.03.12.png" style="border:2px solid black; padding:5px;" width="800">
 
+Total loss starts at about 103 and goes down to 4.3.
+
 validation is still terrible. it seems that it must be using the data differently because looking at the prediction results it correctly classifies and sort of does the bounding box correctly. Not sure why the bounding box isn't better, since the AABB was really good.
+
+**3/13/26 - 5:45pm**
+
+Trying to figure out why validation is still terrible.
+
+ChatGPT provides a couple of ideas:
+- aabb are bigger than the object and encompass it entirely
+- obb being interpreted as aabb is smaller and doesn't cover the entire object
+- this causes inconsistency in labeling of objects that have different degrees of rotation
+- this will cause the bounding boxes to regress to the wrong size and generally have all of the results be worse
+- it is possible that I haven't fixed all of the spots where the `[xc,yc,w,h,theta]` should be interpreted as `[xc,yc,w,h]`. I know this is true because the AP in validation is nearly zero
+- AP is computed with `COCOEvaluator` whereas loss is computed with `YOLOXloss` so I might not have fixed both of them properly
+
+Check for these issues:
+- bboxes_iou() getting 5 columns (including theta)
+- evaluation reading 5 columns
+- conversion to xyxy getting 5 columns
+- right before computing iou print both boxes
+
+I'm learning that boxes.py postprocess gets values like this:
+
+`(xc,yc,w,h,obj) = [-0.6603, -0.0686,  8.2075,  7.8475,  0.0086]`
+
+This is totally wrong. It causes COCOEvaluator to get gigantic numbers. So something is feeding postprocess incorrectly.
+
+Further debugging indicates that the problem may be in my data. i'm providing obb w,h but having the network think it is aabb w,h. it might not be able to match very well. i will make a new annotation set that uses the aabb w,h but puts it in the obb format.
+
