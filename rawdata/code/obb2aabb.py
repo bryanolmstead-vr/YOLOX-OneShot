@@ -27,7 +27,16 @@ def main(aabb_file, obb_file, output_file):
     # Replace bbox and area in OBB annotations with AABB values
     for ann in obb_data["annotations"]:
         if ann["id"] in aabb_map:
-            ann["bbox"], ann["area"] = aabb_map[ann["id"]]
+            x1, y1, w, h = aabb_map[ann["id"]][0]  # unpack the bbox
+            area = aabb_map[ann["id"]][1]
+
+            # Convert top-left (x1,y1) to center (xc,yc)
+            xc = x1 + w / 2
+            yc = y1 + h / 2
+
+            # Update annotation
+            ann["bbox"] = [xc, yc, w, h]
+            ann["area"] = area
         else:
             print(f"Warning: annotation id {ann['id']} not found in AABB dataset")
 
