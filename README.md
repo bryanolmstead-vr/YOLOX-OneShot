@@ -1110,3 +1110,5 @@ This is totally wrong. It causes COCOEvaluator to get gigantic numbers. So somet
 
 Further debugging indicates that the problem may be in my data. i'm providing obb w,h but having the network think it is aabb w,h. it might not be able to match very well. i will make a new annotation set that uses the aabb w,h but puts it in the obb format.
 
+Pretty disappointing. I'm sure there are still things about the training that needs to be fixed. With AABB points in xc,yc format and including unused angle in OBB format it should train just as well as the AABB data set but it doesn't. Some of it kind of works. I think it's prudent to pivot to the feature map visualization with the time remaining.
+
